@@ -157,8 +157,59 @@ Intel APX is not a single monolithic feature. The `-mapxf` flag enables EGPR, ND
 | 4 | `decNumber.s` | 268 | 502.gcc_r |
 | 5 | `magick_cache.s` | 192 | 538.imagick_r |
 
+---
+
+## Phase 2b: Optimization Level Sweep (O0–O3)
+
+### 2b.1 APX Instruction Counts by Optimization Level
+
+**ccmp_archetype.c:**
+
+| Level | CCMP | CTEST | NDD CMOV | PUSH2 | POP2 |
+|---|---|---|---|---|---|
+| -O0 | 0 | 0 | 0 | 0 | 0 |
+| -O1 | 5 | 0 | 1 | 0 | 0 |
+| -O2 | 5 | 0 | 1 | 0 | 0 |
+| -O3 | 5 | 0 | 1 | 0 | 0 |
+
+**cfcmov_archetype_v2.c** (with `+cf`):
+
+| Level | CCMP | CTEST | CFCMOV/NDD CMOV | PUSH2 | POP2 |
+|---|---|---|---|---|---|
+| -O0 | 0 | 0 | 0 | 0 | 0 |
+| -O1 | 1 | 0 | 4 | 0 | 0 |
+| -O2 | 3 | 0 | 4 | 0 | 0 |
+| -O3 | 4 | 0 | 4 | 0 | 0 |
+
+**push2pop2_archetype.c:**
+
+| Level | CCMP | CTEST | NDD CMOV | PUSH2 | POP2 |
+|---|---|---|---|---|---|
+| -O0 | 0 | 0 | 0 | 0 | 0 |
+| -O1 | 0 | 0 | 0 | 4 | 4 |
+| -O2 | 0 | 0 | 0 | 4 | 4 |
+| -O3 | 0 | 0 | 0 | 4 | 4 |
+
+### 2b.2 Key Findings
+
+1. **O0 emits zero APX instructions** (CCMP, NDD CMOV, CFCMOV, PUSH2/POP2) — all APX pattern recognition requires at least O1. At O0, compound conditionals are lowered as separate CMP+Jcc branches, conditional moves use the 2-operand form with explicit MOV setup, and prologues use individual PUSHQ.
+
+2. **The O0→O1 transition is where all APX instructions activate**. This is the critical boundary:
+   - **CCMP**: At O0, `if (a > x && b < y)` becomes `cmpl` → `jle` → `cmpl` → `jge` (two branches). At O1, it becomes `cmpl` → `ccmpgl` (one chained compare). The SimplifyCFG and instruction selection passes at O1 recognize the compound conditional.
+   - **PUSH2/POP2**: At O1, adjacent pushq/popq pairs in prologues are combined into push2p/pop2p.
+   - **CFCMOV**: At O1, conditional loads/stores are hoisted by SimplifyCFG into CFCMOV.
+
+3. **O1→O2→O3 increases CCMP count in the CFCMOV archetype** (1→3→4). This is because `cfcmov_filtered_sum` has a range-check loop (`if (idx >= 0 && idx < limit)`) — higher optimization levels unroll the loop, creating more copies of the compound conditional, each getting its own CCMP. The CCMP pattern itself is recognized at O1, but loop unrolling at O2/O3 multiplies it.
+
+4. **CFCMOV/NDD CMOV count is stable across O1–O3** (4 at all levels). The conditional memory access patterns are recognized at O1 and don't change with more aggressive optimization.
+
+5. **O0 still uses some APX features**: `pushp`/`popp` (PPX — push/pop with prefix) appears even at O0 for frame pointer setup. These are APX encoding-level features, not pattern-dependent.
+
+### 2b.3 Implications for the Thesis
+
+The O0→O1 boundary is clean: LLVM's APX instruction patterns are implemented in instruction selection and early SimplifyCFG, both of which activate at O1. The more interesting question for the thesis is not "do optimization passes prevent APX instructions?" but rather "do optimization passes at O2/O3 *destroy* patterns that O1 recognized?" The CSmith experiments should test this: insert an archetypal function that gets CCMP at O1, embed it in a complex context, and see if O2/O3 transformations (inlining, GVN, loop restructuring) break the pattern.
+
 ### Next Steps
-- [ ] Compile archetypes at O0, O1, O3 to track where instructions appear/disappear
 - [ ] Identify missed opportunities: find patterns in non-APX output that could have used APX instructions but didn't
 - [ ] Set up CSmith pipeline for context-dependent testing
 - [ ] Investigate why CFCMOV doesn't fire for loop-carried conditional memory accesses
