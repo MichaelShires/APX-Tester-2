@@ -470,7 +470,101 @@ For the features that ARE enabled by `-mapxf`:
 | Optimization levels tested | O0, O1, O2, O3 |
 | LLVM version | Homebrew clang 22.1.1 |
 
+---
+
+## Phase 4: Adversarial Context Testing
+
+Unlike CSmith (which generates random context), adversarial tests manually craft patterns known to stress specific compiler passes. We tested 5 categories: pointer aliasing, setjmp/longjmp, volatile access, complex control flow, and inlining.
+
+### 4.1 Results by Function
+
+| Function | Category | CCMP | CFCMOV | NDD CMOV | PUSH2 | Status |
+|---|---|---|---|---|---|---|
+| `adv_ccmp_aliased` | Aliasing | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_restrict` | Aliasing (restrict) | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_cfcmov_alias_store` | Aliasing | 0 | 1 | 0 | 0 | OK |
+| `adv_cfcmov_restrict` | Aliasing (restrict) | 0 | 1 | 0 | 0 | OK |
+| `adv_ndd_aliased` | Aliasing | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_deep_alias` | Aliasing | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_setjmp` | setjmp | 0 | 0 | 0 | 1 | PARTIAL |
+| `adv_ccmp_no_setjmp` | volatile control | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ndd_setjmp` | setjmp | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_volatile` | Volatile | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_volatile_local` | Volatile | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ndd_volatile` | Volatile | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_range_volatile` | Volatile | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_cfcmov_volatile` | Volatile | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_computed_goto` | Control flow | 1 | 0 | 0 | 0 | OK |
+| `adv_ccmp_switch` | Control flow | 0 | 0 | 0 | 0 | **FAILED** |
+| `adv_ccmp_side_effect` | Control flow | 1 | 0 | 0 | 1 | OK |
+| `adv_ccmp_interleaved_calls` | Control flow | 2 | 0 | 0 | 2 | OK |
+| `adv_ndd_indirect` | Control flow | 0 | 1 | 0 | 2 | OK |
+| `adv_inline_ccmp_complex` | Inlining | 0 | 1 | 1 | 0 | OK |
+| `adv_inline_multiple` | Inlining | 2 | 0 | 0 | 0 | OK |
+| `adv_inline_chain` | Inlining | 0 | 0 | 1 | 0 | OK |
+| `adv_inline_push2` | Inlining | 0 | 0 | 0 | 2 | OK |
+
+**12 failures out of 23 functions (52% failure rate).**
+
+### 4.2 Analysis: What Breaks APX Patterns
+
+#### Memory Operands Kill CCMP and NDD CMOV
+
+The biggest finding: **when comparison operands come from memory (pointers), CCMP is not emitted.** Instead, LLVM falls back to the branch-based pattern:
+
+```asm
+; adv_ccmp_aliased: NO CCMP — uses branches instead
+cmpl    %edx, (%rdi)     ; compare through pointer
+jle     LBB0_2            ; branch (not CCMP!)
+cmpl    %ecx, (%rsi)     ; second compare through pointer
+```
+
+Our archetypal functions used register operands (`int a, int b, int x, int y`), which always produce CCMP. But real-world code often compares values through pointers. This is why the CSmith tests didn't catch this — CSmith functions use scalar parameters.
+
+**Even `restrict` doesn't help**: `adv_ccmp_restrict` also failed. The issue isn't aliasing ambiguity — it's that CCMP requires both operands in registers, and the memory loads create separate basic blocks that prevent the pattern from being recognized.
+
+#### Volatile Completely Blocks All APX Patterns
+
+Every volatile test case failed. Volatile forces memory access on every read, which:
+- Prevents CCMP (can't chain register comparisons when values are in memory)
+- Prevents NDD CMOV (same reason)
+- Prevents CFCMOV (volatile loads can't be speculatively hoisted)
+
+#### Switch Statements Prevent CCMP
+
+`adv_ccmp_switch` failed even though the compound conditional is straightforward. The switch's jump table creates a complex CFG that prevents SimplifyCFG from recognizing the compound conditional within a case.
+
+#### setjmp Prevents CCMP/NDD CMOV but Not PUSH2
+
+setjmp forces locals to memory (they must survive the nonlocal jump). This kills register-based patterns (CCMP, NDD CMOV) but PUSH2/POP2 still works because it operates on the function prologue, which is unaffected by setjmp semantics.
+
+#### Inlining Generally Preserves Patterns
+
+All inlining tests passed — inlined CCMP and NDD CMOV patterns survived even in complex callers with loops and multiple call sites. This confirms the CSmith findings: the problem isn't inlining destroying patterns, it's the nature of the operands.
+
+### 4.3 Revised Understanding
+
+| Pattern Breaker | CCMP | NDD CMOV | CFCMOV | PUSH2/POP2 |
+|---|---|---|---|---|
+| **Memory operands (pointers)** | BROKEN | BROKEN | OK | N/A |
+| **Volatile** | BROKEN | BROKEN | BROKEN | N/A |
+| **setjmp** | BROKEN | BROKEN | untested | OK |
+| **Switch dispatch** | BROKEN | N/A | N/A | N/A |
+| **Computed goto** | OK | N/A | N/A | N/A |
+| **Side effects in condition** | OK | N/A | N/A | N/A |
+| **Interleaved calls** | OK | N/A | N/A | OK |
+| **Inlining** | OK | OK | OK | OK |
+
+### 4.4 Implications
+
+**The CSmith 100% pass rate was misleading.** CSmith functions use scalar parameters and local variables — exactly the patterns where CCMP and NDD CMOV work. Real-world code frequently accesses values through pointers, which breaks both patterns.
+
+This means:
+1. **LLVM's CCMP is register-only**: it cannot chain comparisons when operands are in memory. This is a fundamental limitation of the current instruction selection pattern.
+2. **The SPEC numbers overcount CCMP's effectiveness**: many compound conditionals in real code involve pointer dereferences and would NOT become CCMP even with `-mapxf`.
+3. **CFCMOV is more resilient**: it handled aliased pointer stores correctly, because its purpose IS conditional memory access.
+4. **The thesis is confirmed from a different angle**: it's not that optimization passes destroy patterns — it's that the instruction selection patterns are too narrow to match the full range of source-level idioms.
+
 ### Remaining Work
 - [ ] Deep-dive case study: trace CFCMOV through SimplifyCFG with `-print-after-all`
-- [ ] Targeted adversarial contexts: manually craft programs that stress specific passes (aliasing, setjmp, exception handling)
 - [ ] Final project writeup
