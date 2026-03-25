@@ -113,6 +113,52 @@ Intel APX is not a single monolithic feature. The `-mapxf` flag enables EGPR, ND
 
 ### Next Steps
 - [ ] Compile archetypes at O0, O1, O3 to track where instructions appear/disappear
-- [ ] Begin SPEC assembly diffing for real-world instruction counts
+- [x] ~~Begin SPEC assembly diffing for real-world instruction counts~~ (See Phase 2 below)
+- [ ] Set up CSmith pipeline for context-dependent testing
+- [ ] Investigate why CFCMOV doesn't fire for loop-carried conditional memory accesses
+
+---
+
+## Phase 2: SPEC CPU 2017 Real-World Analysis
+
+**Toolchain**: Homebrew clang 22.1.1, `--target=x86_64-apple-macos`, `-isysroot`, `-O2 -mapxf`
+**Benchmarks compiled**: 5 (265 source files total)
+
+### 2.1 APX Instruction Counts Across SPEC Benchmarks
+
+| Benchmark | Files | CCMP | CTEST | NDD CMOV | PUSH2 | POP2 | Total |
+|---|---|---|---|---|---|---|---|
+| 505.mcf_r | 10 | 3 | 0 | 11 | 21 | 21 | 56 |
+| 557.xz_r | 81 | 33 | 45 | 44 | 218 | 231 | 571 |
+| 525.x264_r | 37 | 142 | 91 | 207 | 453 | 486 | 1,379 |
+| 538.imagick_r | 99 | 344 | 200 | 412 | 1,867 | 2,154 | 4,977 |
+| 502.gcc_r | 38 | 129 | 89 | 173 | 609 | 663 | 1,663 |
+| **TOTAL** | **265** | **651** | **425** | **847** | **3,168** | **3,555** | **8,646** |
+
+### 2.2 Observations
+
+1. **PUSH2/POP2 dominate** — 6,723 of 8,646 total APX instructions (77.8%). This makes sense: every non-trivial function with callee-saved registers benefits, and the transformation is mechanical (pair adjacent pushes).
+
+2. **CCMP + CTEST are well-represented** — 1,076 combined instances. CTEST (425) appears alongside CCMP (651), suggesting compound conditionals with bitwise tests are common in real code.
+
+3. **NDD CMOV is actively used** — 847 instances across all benchmarks. Confirms that LLVM's NDD CMOV lowering is production-ready and consistently applied.
+
+4. **538.imagick_r is the richest benchmark** — 4,977 APX instructions across 99 files. Image processing code is heavy on conditional pixel operations and function calls.
+
+5. **505.mcf_r is sparse** — only 56 APX instructions across 10 files. Network simplex is pointer-chasing code with fewer compound conditionals.
+
+### 2.3 Top Files by APX Instruction Density
+
+| Rank | File | Total APX | Benchmark |
+|---|---|---|---|
+| 1 | `wand_magick-image.s` | 550 | 538.imagick_r |
+| 2 | `mini-gmp.s` | 373 | 502.gcc_r |
+| 3 | `x264_src_encoder_analyse.s` | 287 | 525.x264_r |
+| 4 | `decNumber.s` | 268 | 502.gcc_r |
+| 5 | `magick_cache.s` | 192 | 538.imagick_r |
+
+### Next Steps
+- [ ] Compile archetypes at O0, O1, O3 to track where instructions appear/disappear
+- [ ] Identify missed opportunities: find patterns in non-APX output that could have used APX instructions but didn't
 - [ ] Set up CSmith pipeline for context-dependent testing
 - [ ] Investigate why CFCMOV doesn't fire for loop-carried conditional memory accesses
