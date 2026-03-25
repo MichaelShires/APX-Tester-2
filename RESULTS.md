@@ -45,9 +45,36 @@
 - **NDD CMOV**: `cmovgl %src1, %src2, %dst` — 3-operand form, eliminates a MOV instruction
 - **CFCMOV**: `cfcmovgl %src, %dst` — different opcode, different semantics (memory operand support, flag preservation)
 
-**Open question**: Does LLVM lack CFCMOV support entirely, or does it deliberately prefer NDD CMOV? This warrants investigation of the LLVM source (instruction selection patterns for APX).
+**Open question (resolved)**: See Section 1.2b below.
 
-**Decision**: Pivot to studying **NDD CMOV** as our third instruction category, while documenting the CFCMOV absence as a finding. The NDD form is what LLVM actually uses in practice.
+---
+
+### 1.2b CFCMOV — Resolved: Separate Feature Flag, Different Purpose
+
+**Root cause found: `-mapxf` does NOT enable CFCMOV.**
+
+The `-mapxf` flag enables: `+egpr`, `+ndd`, `+push2pop2`, `+ppx`. The conditional faulting feature (`+cf`) is a **separate feature flag** not included in `-mapxf`. CFCMOV requires explicit enablement via `-Xclang -target-feature -Xclang +cf`.
+
+**With `+cf` enabled, CFCMOV emits correctly for conditional memory access patterns:**
+
+| Function | With `-mapxf` only | With `-mapxf +cf` | Notes |
+|---|---|---|---|
+| `cfcmov_cond_load` | Branch + `movl (%rsi), %eax` | `cfcmovnel (%rsi), %eax` | Conditional load — branch eliminated entirely |
+| `cfcmov_cond_store` | Branch + `movl %edx, (%rsi)` | `cfcmovnel %edx, (%rsi)` | Conditional store — branch eliminated entirely |
+| `cfcmov_null_check_load` | Branch + `movl (%rdi), %eax` | `cfcmovnel (%rdi), %eax, %eax` (NDD form) | Null-check load with default value |
+| `cfcmov_zeroing` | `xorl` + `cmovgl %edi, %eax` (2-op) | `cfcmovgl %edi, %eax` (zeroing form) | Zeroing CFCMOV — no need for explicit XOR |
+| `cfcmov_filtered_sum` | Loop with branches + CCMP | Loop with branches + CCMP | Complex loop — CFCMOV not applied (branch kept) |
+| `cfcmov_sparse_update` | Loop with branches | Loop with branches | Conditional store in loop — not hoisted |
+| `cfcmov_safe_deref` | `cmovneq` pointer select + unconditional load | `cmovneq` pointer select + unconditional load | Already branchless via pointer select; no CFCMOV needed |
+
+**Key findings**:
+1. **CFCMOV and NDD CMOV are architecturally distinct features** — CFCMOV provides conditional faulting (fault suppression on false path), while NDD CMOV provides 3-operand register-to-register moves. They serve different purposes and are controlled by different feature flags.
+2. **CFCMOV eliminates branches for guarded memory access** — the simple conditional load/store functions went from branch-based code to single CFCMOV instructions. This is a significant code quality improvement.
+3. **CFCMOV zeroing eliminates setup instructions** — `cfcmovgl %edi, %eax` replaces `xorl %eax, %eax` + `cmovgl %edi, %eax` (saves one instruction).
+4. **Loop-carried conditional memory accesses are NOT hoisted** — the `cfcmov_filtered_sum` and `cfcmov_sparse_update` loops still use branches. SimplifyCFG's conditional faulting optimization does not apply within loop bodies in these cases.
+5. **`-mapxf` omitting `+cf` is itself a finding** — this means APX "full" mode does not include conditional faulting. Users/compilers must opt in separately, which may reduce real-world adoption.
+
+**Decision**: Study **four** instruction categories instead of three: CCMP, CFCMOV (with `+cf`), NDD CMOV (from `-mapxf`), and PUSH2/POP2. The CFCMOV vs NDD CMOV distinction strengthens the paper.
 
 ---
 
@@ -73,15 +100,19 @@
 
 ## Summary: Baseline Established
 
-| Instruction | Emitted at O2? | Pattern recognized? | Notes |
-|---|---|---|---|
-| CCMP | Yes (5/5 compound conditionals) | Yes | Robust for uniform compound conditionals |
-| CFCMOV | **No** | N/A | LLVM prefers NDD CMOV instead |
-| NDD CMOV | Yes (4 instances) | Yes | Used in place of CFCMOV |
-| PUSH2/POP2 | Yes (where applicable) | Partial | Requires call boundary; optimization can eliminate opportunities |
+| Instruction | Feature Flag | Emitted at O2? | Pattern | Notes |
+|---|---|---|---|---|
+| CCMP | `-mapxf` (+ndd) | Yes (5/5 compound conditionals) | Compound conditionals | Robust for uniform patterns |
+| NDD CMOV | `-mapxf` (+ndd) | Yes (4 instances) | Ternary/min/max/abs | 3-operand form eliminates setup MOV |
+| CFCMOV | **`+cf` (separate!)** | Yes (4/7 archetypes) | Conditional memory access | Requires explicit `+cf` flag |
+| PUSH2/POP2 | `-mapxf` (+push2pop2) | Yes (where applicable) | Function prologue/epilogue | Requires call boundary |
+
+### Key Meta-Finding
+
+Intel APX is not a single monolithic feature. The `-mapxf` flag enables EGPR, NDD, PUSH2/POP2, and PPX but **not** conditional faulting (CF/CFCMOV). This fragmentation means that even when a compiler "supports APX," the level of support depends on which sub-features are enabled. This directly supports the thesis: hardware complexity creates gaps in compiler coverage.
 
 ### Next Steps
-- [ ] Investigate LLVM source to determine if CFCMOV is unimplemented or intentionally avoided
 - [ ] Compile archetypes at O0, O1, O3 to track where instructions appear/disappear
 - [ ] Begin SPEC assembly diffing for real-world instruction counts
 - [ ] Set up CSmith pipeline for context-dependent testing
+- [ ] Investigate why CFCMOV doesn't fire for loop-carried conditional memory accesses
