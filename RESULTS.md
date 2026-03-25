@@ -565,6 +565,99 @@ This means:
 3. **CFCMOV is more resilient**: it handled aliased pointer stores correctly, because its purpose IS conditional memory access.
 4. **The thesis is confirmed from a different angle**: it's not that optimization passes destroy patterns — it's that the instruction selection patterns are too narrow to match the full range of source-level idioms.
 
+---
+
+## Phase 5: CFCMOV Deep Dive — Pass-Level Trace
+
+Using `-mllvm -print-after-all`, we traced exactly how LLVM transforms a conditional load into CFCMOV for `cfcmov_cond_load(int cond, const int *ptr)`.
+
+### 5.1 The Transformation Pipeline
+
+**Source code:**
+```c
+int cfcmov_cond_load(int cond, const int *ptr) {
+    if (cond) return *ptr;
+    return 0;
+}
+```
+
+**Step 1: After TailCallElimPass (both +cf and no-cf identical)**
+```llvm
+define i32 @cfcmov_cond_load(i32 %0, ptr %1) {
+  %3 = icmp eq i32 %0, 0
+  br i1 %3, label %6, label %4       ; ← conditional branch
+
+4:
+  %5 = load i32, ptr %1, align 4     ; ← load only on true path
+  br label %6
+
+6:
+  %7 = phi i32 [ %5, %4 ], [ 0, %2 ] ; ← phi merges loaded value or 0
+  ret i32 %7
+}
+```
+
+This is standard branch-based IR: a diamond pattern with a conditional load on one side and a constant on the other.
+
+**Step 2: SimplifyCFGPass — the critical divergence**
+
+**Without `+cf`:** SimplifyCFGPass sees the conditional load but **cannot hoist it** because the load might fault (page fault on invalid pointer). The branch stays.
+
+**With `+cf`:** SimplifyCFGPass recognizes that the target has the CF (conditional faulting) feature, which means loads can be executed speculatively without faulting. It transforms the branch + load + phi into a single `llvm.masked.load`:
+
+```llvm
+define i32 @cfcmov_cond_load(i32 %0, ptr %1) {
+  %3 = icmp eq i32 %0, 0
+  %4 = xor i1 %3, true               ; ← invert condition
+  %5 = bitcast i1 %4 to <1 x i1>     ; ← convert to vector mask
+  %6 = call <1 x i32> @llvm.masked.load.v1i32.p0(
+         ptr align 4 %1,              ; ← pointer
+         <1 x i1> %5,                 ; ← mask (load only if true)
+         <1 x i32> zeroinitializer)   ; ← passthrough value (0)
+  %7 = bitcast <1 x i32> %6 to i32
+  ret i32 %7
+}
+```
+
+The branch, phi node, and separate basic blocks are **completely eliminated**. The masked load intrinsic encodes "load from %1 if condition is true, otherwise use 0" — exactly the semantics of the original code.
+
+**Step 3: Instruction Selection (backend)**
+
+The `llvm.masked.load.v1i32.p0` intrinsic is lowered to `X86ISD::CLOAD` in instruction selection, which matches the CFCMOV TableGen pattern:
+
+```asm
+testl   %edi, %edi
+cfcmovnel  (%rsi), %eax    ; conditional load: if ZF=0, load from (%rsi) into %eax
+```
+
+### 5.2 Why SimplifyCFG Is the Gatekeeper
+
+The entire CFCMOV pipeline depends on **one check inside SimplifyCFG**: does the target support conditional faulting? This is implemented as `TTI.hasConditionalLoadStoreForType()` in `SimplifyCFG.cpp`. When `+cf` is absent:
+
+1. SimplifyCFG sees the diamond pattern with a conditional load
+2. It checks if the load can be speculatively executed
+3. Without CF, speculative loads might fault → **transformation is blocked**
+4. The branch-based IR flows through to instruction selection
+5. ISel generates `testl` + `je` + `movl (%rsi), %eax` (branch-based)
+
+When `+cf` is present:
+
+1. SimplifyCFG sees the same diamond pattern
+2. `hasConditionalLoadStoreForType()` returns true
+3. The branch is replaced with `llvm.masked.load`
+4. ISel lowers masked.load → `X86ISD::CLOAD` → `cfcmovnel`
+
+### 5.3 The Same Pattern Applies to Conditional Stores
+
+`cfcmov_cond_store` follows the same path but with `llvm.masked.store` → `X86ISD::CSTORE` → `cfcmovnel %edx, (%rsi)`.
+
+### 5.4 Implications
+
+1. **CFCMOV is an IR-level transformation, not just instruction selection.** Unlike CCMP and NDD CMOV (which are purely ISel patterns), CFCMOV requires SimplifyCFG to restructure the IR first. This is a fundamentally different mechanism.
+
+2. **The `+cf` flag gates an IR transformation, not just an encoding.** This is why it has such a large impact (1,120 instructions, 634 branches) — it unlocks an entire category of IR optimization that cascades through the rest of the pipeline.
+
+3. **This is the strongest evidence for the thesis.** A single feature flag controls whether an IR-level optimization pass fires, which determines whether a new instruction is used. The hardware capability exists, the compiler backend supports it, but the transformation is gated by a flag that isn't included in the "full APX" flag set.
+
 ### Remaining Work
-- [ ] Deep-dive case study: trace CFCMOV through SimplifyCFG with `-print-after-all`
 - [ ] Final project writeup
