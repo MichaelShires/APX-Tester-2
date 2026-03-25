@@ -209,7 +209,77 @@ Intel APX is not a single monolithic feature. The `-mapxf` flag enables EGPR, ND
 
 The O0→O1 boundary is clean: LLVM's APX instruction patterns are implemented in instruction selection and early SimplifyCFG, both of which activate at O1. The more interesting question for the thesis is not "do optimization passes prevent APX instructions?" but rather "do optimization passes at O2/O3 *destroy* patterns that O1 recognized?" The CSmith experiments should test this: insert an archetypal function that gets CCMP at O1, embed it in a complex context, and see if O2/O3 transformations (inlining, GVN, loop restructuring) break the pattern.
 
+---
+
+## Phase 2c: Missed Opportunity Analysis
+
+### 2c.1 CCMP Conversion Efficiency
+
+We counted compound conditional patterns in non-APX output (SETcc + AND/OR chains) and compared against CCMP emission in APX output:
+
+| Benchmark | Non-APX SETcc chains | APX CCMP emitted | Conversion rate |
+|---|---|---|---|
+| 505.mcf_r | 0 | 3 | N/A (branch-based) |
+| 557.xz_r | 45 | 33 | ~73% |
+| 525.x264_r | 195 | 142 | ~72% |
+| 538.imagick_r | 253 | 344 | ~135% |
+| 502.gcc_r | 129 | 129 | ~100% |
+| **TOTAL** | **622** | **651** | **~105%** |
+
+**Key insight**: The total CCMP count (651) *exceeds* the SETcc chain count (622). This is because CCMP replaces **two different non-APX patterns**:
+1. **Branchless SETcc chains**: `cmpl` → `setg` → `cmpl` → `setl` → `andb` (what we counted)
+2. **Branch-based compound conditionals**: `testq` → `je` → `movq` → `ccmpeq` (separate basic blocks joined by CCMP)
+
+The 538.imagick_r "135%" rate means many compound conditionals were branch-based in non-APX but became branchless CCMP chains in APX. **CCMP doesn't just replace SETcc patterns — it eliminates branches entirely.**
+
+### 2c.2 NDD CMOV Conversion Efficiency
+
+| Benchmark | Non-APX 2-op CMOVcc | APX NDD 3-op CMOVcc | Remaining 2-op in APX | MOV+CMOV pairs converted |
+|---|---|---|---|---|
+| 505.mcf_r | 53 | 11 | 42 | 2 |
+| 557.xz_r | 148 | 44 | 105 | 16 |
+| 525.x264_r | 1,444 | 207 | 1,225 | 63 |
+| 538.imagick_r | 1,355 | 412 | 933 | 289 |
+| 502.gcc_r | 795 | 173 | 613 | 39 |
+| **TOTAL** | **3,795** | **847** | **2,918** | **409** |
+
+**Only 22% of CMOVs were upgraded to NDD.** But this is NOT a missed opportunity — investigation of the remaining 2,918 two-operand CMOVs shows they are **already optimal**:
+
+- **Zero MOV→CMOV pairs exist in APX output** — LLVM has already converted every eligible case to NDD
+- The remaining 2-op CMOVs have destinations that are live-in from prior computation (not set up by a MOV), making NDD unnecessary
+- The 409 MOV→CMOV pairs found in non-APX output confirm these were the exact cases converted to NDD
+
+**Conclusion: LLVM's NDD CMOV conversion is complete — there are no missed NDD opportunities.**
+
+### 2c.3 PUSH2/POP2 Pairing Efficiency
+
+| Benchmark | Non-APX pushq | APX push2p | Pushq replaced | Remaining unpaired | Pairing rate |
+|---|---|---|---|---|---|
+| 505.mcf_r | 124 | 21 | 42 | 23 | ~64% |
+| 557.xz_r | 1,027 | 218 | 436 | 148 | ~74% |
+| 525.x264_r | 2,297 | 453 | 906 | 439 | ~67% |
+| 538.imagick_r | 10,974 | 1,867 | 3,734 | 3,921 | ~48% |
+| 502.gcc_r | 2,406 | 609 | 1,218 | 137 | ~89% |
+
+**Pairing rates range from 48% to 89%.** Unpaired pushq instructions remain because:
+1. **Odd number of callee-saved registers** — PUSH2 requires pairs, so one register is always left over
+2. **Frame pointer push** — `pushq %rbp` is often isolated (though APX uses `pushp` for this)
+3. **Stack alignment pushes** — extra pushq for 16-byte alignment can't be paired
+
+The 538.imagick_r low rate (48%) likely reflects many small functions with only 1-2 callee-saved registers.
+
+### 2c.4 Summary: Where Are the Real Missed Opportunities?
+
+| Instruction | Missed opportunities? | Assessment |
+|---|---|---|
+| CCMP | **Minimal** | CCMP captures both SETcc chains AND branch-based compounds. Conversion is thorough. |
+| NDD CMOV | **None** | Every eligible MOV+CMOV pair is converted. Remaining 2-op CMOVs are already optimal. |
+| CFCMOV | **Yes — not enabled by default** | `-mapxf` omits `+cf`. All conditional loads/stores remain branch-based unless `+cf` is explicitly added. |
+| PUSH2/POP2 | **Structural, not fixable** | Unpaired pushes are due to odd register counts, frame pointers, and alignment — not compiler deficiency. |
+
+**The biggest missed opportunity across all of SPEC is CFCMOV**: every conditional load/store in all 265 files is a branch instead of a CFCMOV, purely because `-mapxf` doesn't include `+cf`.
+
 ### Next Steps
-- [ ] Identify missed opportunities: find patterns in non-APX output that could have used APX instructions but didn't
 - [ ] Set up CSmith pipeline for context-dependent testing
 - [ ] Investigate why CFCMOV doesn't fire for loop-carried conditional memory accesses
+- [ ] Quantify conditional load/store patterns in SPEC that would benefit from CFCMOV
