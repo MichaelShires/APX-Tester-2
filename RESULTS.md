@@ -398,7 +398,79 @@ However, this does NOT mean optimization passes never destroy APX opportunities.
 
 The thesis finding is nuanced: **the barrier to APX adoption is not optimization-pass interference with pattern recognition, but rather (a) feature flag exposure and (b) whether optimization passes create or destroy the prerequisites for the pattern** (e.g., creating/eliminating function boundaries for PUSH2/POP2).
 
-### Next Steps
-- [ ] Deep-dive case study: pick a top CFCMOV file and trace how SimplifyCFG hoists the conditional access
-- [ ] Targeted adversarial contexts: manually craft programs that stress specific passes (aliasing, exception handling, setjmp) to see if they break APX patterns
-- [ ] Write up final results
+---
+
+## Consolidated Findings Summary
+
+### Finding 1: APX Is Not Monolithic
+
+Intel APX is fragmented into multiple sub-features controlled by separate flags:
+
+| Feature | Flag | What it enables |
+|---|---|---|
+| EGPR | `-mapxf` (+egpr) | Extended general-purpose registers (r16–r31) |
+| NDD | `-mapxf` (+ndd) | New Data Destination (3-operand instructions) |
+| PUSH2/POP2 | `-mapxf` (+push2pop2) | Paired push/pop |
+| PPX | `-mapxf` (+ppx) | Push/pop with prefix encoding |
+| **CF** | **`+cf` (NOT in `-mapxf`)** | **Conditional faulting (CFCMOV)** |
+
+The "full APX" flag (`-mapxf`) omits conditional faulting entirely. This is the single largest source of missed APX optimization across real-world code.
+
+### Finding 2: CFCMOV ≠ NDD CMOV
+
+Our initial assumption that CFCMOV was a replacement for CMOV was wrong. They are architecturally distinct:
+
+- **NDD CMOV** (`cmovgl %src1, %src2, %dst`): 3-operand register-to-register conditional move. Eliminates setup MOV instructions. Enabled by `-mapxf`.
+- **CFCMOV** (`cfcmovnel (%ptr), %dst`): Conditional memory access with fault suppression. Eliminates branches guarding loads/stores. Requires `+cf`.
+
+LLVM correctly uses each for its intended purpose. In SPEC benchmarks, enabling `+cf` alongside `-mapxf`:
+- Added **1,120 CFCMOV** instructions
+- **Reduced** NDD CMOV by 66 (CFCMOV subsumed some conditional loads)
+- Eliminated **634 conditional branches**
+
+### Finding 3: APX Instruction Selection Is Late-Stage and Robust
+
+All APX instruction patterns (CCMP, NDD CMOV, CFCMOV, PUSH2/POP2) are recognized during LLVM's instruction selection and machine-level optimization phases, which run *after* most IR-level optimization passes. This means:
+
+- **O0 emits zero APX instructions** — pattern recognition requires at least O1
+- **O1 activates all patterns** — the O0→O1 boundary is where APX appears
+- **O2/O3 don't destroy patterns** — they only increase counts via loop unrolling
+- **500 CSmith programs at O2/O3 showed 0 pattern failures** — even with force-inlining
+
+### Finding 4: The Real Barriers Are Upstream
+
+Rather than optimization passes destroying instruction patterns, the barriers to APX adoption are:
+
+1. **Feature flag exposure**: `-mapxf` omitting `+cf` leaves 1,120 CFCMOV instructions and 634 branch eliminations on the table across 265 SPEC files
+2. **Prerequisite destruction**: Tail-call optimization converts recursion to iteration, eliminating function boundaries where PUSH2/POP2 would appear
+3. **Structural constraints**: Odd numbers of callee-saved registers, stack alignment pushes, and frame pointer management limit PUSH2/POP2 pairing (48–89% rates)
+
+### Finding 5: LLVM's Existing APX Support Is Thorough
+
+For the features that ARE enabled by `-mapxf`:
+
+| Instruction | Conversion completeness | Notes |
+|---|---|---|
+| CCMP | ~105% (exceeds non-APX compound conditional count) | Also converts branch-based compounds, not just SETcc chains |
+| NDD CMOV | 100% (zero missed MOV+CMOV pairs) | Every eligible case converted |
+| PUSH2/POP2 | 48–89% (limited by structural factors) | Not a compiler deficiency |
+
+### Quantitative Summary Across All Experiments
+
+| Metric | Value |
+|---|---|
+| SPEC files compiled | 265 (across 5 benchmarks) |
+| Total APX instructions (`-mapxf`) | 8,646 |
+| Total APX instructions (`-mapxf +cf`) | 9,708 |
+| CFCMOV unlocked by `+cf` | 1,120 |
+| Branches eliminated by CFCMOV | 634 |
+| Files benefiting from CFCMOV | 119 (45%) |
+| CSmith programs tested | 500 |
+| CSmith APX pattern failures | 0 (0%) |
+| Optimization levels tested | O0, O1, O2, O3 |
+| LLVM version | Homebrew clang 22.1.1 |
+
+### Remaining Work
+- [ ] Deep-dive case study: trace CFCMOV through SimplifyCFG with `-print-after-all`
+- [ ] Targeted adversarial contexts: manually craft programs that stress specific passes (aliasing, setjmp, exception handling)
+- [ ] Final project writeup
