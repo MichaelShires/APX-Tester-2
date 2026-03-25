@@ -659,5 +659,11 @@ When `+cf` is present:
 
 3. **This is the strongest evidence for the thesis.** A single feature flag controls whether an IR-level optimization pass fires, which determines whether a new instruction is used. The hardware capability exists, the compiler backend supports it, but the transformation is gated by a flag that isn't included in the "full APX" flag set.
 
-### Remaining Work
-- [ ] Final project writeup
+---
+---
+
+# Part II: Differential Fuzzing for APX Correctness
+
+**Motivation**: Part I analyzed whether LLVM *emits* APX instructions. Part II tests whether the emitted APX instructions are *correct*. When the compiler transforms `br + load + phi` into `cfcmovnel`, or `cmp + setcc + andb` into `ccmpgl`, the transformation must preserve program semantics. A miscompilation is a potential security vulnerability.
+
+**Methodology**: Differential fuzzing — compile random programs with and without APX flags, execute both, compare outputs.

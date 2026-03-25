@@ -8,3 +8,4 @@ DerivedData/
 *.o
 *.s
 SPEC/
+docker/sde-external-*/
