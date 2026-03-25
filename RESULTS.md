@@ -343,6 +343,62 @@ Enabling `+cf` adds **1,062 net new APX instructions** (12.3% increase) and elim
 3. **Nearly half of all files benefit**: 45% of compiled files contain at least one CFCMOV, showing this isn't a niche optimization.
 4. **The highest-impact files are compute-intensive**: video encoding, pixel processing, and arbitrary-precision math — exactly the workloads where branch elimination matters most.
 
+---
+
+## Phase 3: CSmith Context-Sensitivity Testing
+
+### 3.1 Methodology
+
+We inserted APX archetypal functions into randomly generated CSmith programs to test whether surrounding code context causes LLVM to miss APX instruction patterns. Three test configurations:
+
+1. **Noinline**: Functions marked `__attribute__((noinline))` — tests whether compilation unit context affects instruction selection for isolated functions
+2. **Inlineable**: Functions without inline barriers — tests whether the compiler chooses to inline them and whether APX patterns survive
+3. **Force-inlined**: Functions marked `__attribute__((always_inline))` — forces the APX pattern into the middle of CSmith code, maximum exposure to surrounding optimization passes
+
+### 3.2 Results
+
+| Configuration | Programs | O-Level | Pass | Fail | Rate |
+|---|---|---|---|---|---|
+| Noinline | 200 | O2 | 200 | 0 | **100%** |
+| Inlineable | 200 | O2 | 200 | 0 | **100%** |
+| CFCMOV (+cf) | 200 | O2 | 200 | 0 | **100%** |
+| Force-inlined | 100 | O2 | 100 | 0 | **100%** |
+| Force-inlined | 100 | O3 | 100 | 0 | **100%** |
+| Noinline | 100 | O3 | 100 | 0 | **100%** |
+| Inlineable | 100 | O3 | 100 | 0 | **100%** |
+| **TOTAL** | **500** | | **500** | **0** | **100%** |
+
+### 3.3 Analysis
+
+**Across 500 CSmith-generated programs, zero APX instruction patterns were destroyed by surrounding code context.** This includes:
+
+- **CCMP** (compound conditionals): Always emitted, even when force-inlined into CSmith functions at O3
+- **NDD CMOV** (conditional assignment): Always emitted
+- **CFCMOV** (conditional memory access): Always emitted when `+cf` enabled
+
+### 3.4 Why 100%? Understanding the Result
+
+This 100% pass rate is itself informative. It means:
+
+1. **LLVM's APX patterns are late-stage**: CCMP, NDD CMOV, and CFCMOV are recognized during instruction selection (ISel) and machine-level optimization, *after* most IR-level passes have run. By the time instruction selection happens, the patterns are expressed in a form that ISel reliably matches regardless of surrounding code.
+
+2. **The archetypal patterns are canonical**: `if (a > x && b < y)` lowers to a compare-and-branch sequence in IR that LLVM always recognizes as a CCMP candidate. Optimization passes may transform the surrounding code, but they don't restructure simple compound conditionals into unrecognizable forms.
+
+3. **CSmith generates broad but not adversarial context**: CSmith programs are syntactically complex but don't specifically target patterns known to interfere with instruction selection (e.g., heavy aliasing, exception handling, setjmp/longjmp).
+
+### 3.5 Implications for the Thesis
+
+The CSmith results suggest that **for the APX instructions we tested, LLVM's instruction selection is robust against random surrounding code context at O2 and O3**. This is a positive finding — it means that once LLVM has APX pattern support, it applies it reliably.
+
+However, this does NOT mean optimization passes never destroy APX opportunities. The results from earlier phases show:
+
+- **Tail-call optimization** eliminated PUSH2/POP2 opportunities (Phase 1, `push2pop2_recursive`)
+- **Feature flag fragmentation** prevents CFCMOV from ever firing with default flags (Phase 2d)
+- **The O0→O1 boundary** is where patterns activate — without optimization, no APX instructions are emitted at all
+
+The thesis finding is nuanced: **the barrier to APX adoption is not optimization-pass interference with pattern recognition, but rather (a) feature flag exposure and (b) whether optimization passes create or destroy the prerequisites for the pattern** (e.g., creating/eliminating function boundaries for PUSH2/POP2).
+
 ### Next Steps
-- [ ] Set up CSmith pipeline for context-dependent testing
 - [ ] Deep-dive case study: pick a top CFCMOV file and trace how SimplifyCFG hoists the conditional access
+- [ ] Targeted adversarial contexts: manually craft programs that stress specific passes (aliasing, exception handling, setjmp) to see if they break APX patterns
+- [ ] Write up final results
