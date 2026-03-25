@@ -279,7 +279,70 @@ The 538.imagick_r low rate (48%) likely reflects many small functions with only 
 
 **The biggest missed opportunity across all of SPEC is CFCMOV**: every conditional load/store in all 265 files is a branch instead of a CFCMOV, purely because `-mapxf` doesn't include `+cf`.
 
+---
+
+## Phase 2d: CFCMOV Impact — Recompiling SPEC with +cf
+
+After discovering that `-mapxf` omits conditional faulting, we recompiled all 265 SPEC files with `-mapxf -Xclang -target-feature -Xclang +cf` to measure the impact.
+
+### 2d.1 CFCMOV Emission with +cf Enabled
+
+| Benchmark | Files | CFCMOV | Files with CFCMOV | Branches eliminated |
+|---|---|---|---|---|
+| 505.mcf_r | 10 | 18 | 3 | 12 |
+| 557.xz_r | 81 | 69 | 20 | 17 |
+| 525.x264_r | 37 | 258 | 22 | 132 |
+| 538.imagick_r | 99 | 554 | 51 | 349 |
+| 502.gcc_r | 38 | 221 | 23 | 124 |
+| **TOTAL** | **265** | **1,120** | **119 (45%)** | **634** |
+
+**1,120 CFCMOV instructions** appear across 119 files (45% of all compiled files), eliminating **634 conditional branches**.
+
+### 2d.2 Interaction Effects: +cf Changes Other Instruction Counts
+
+Adding `+cf` doesn't just add CFCMOV — it shifts the instruction selection landscape:
+
+| Benchmark | CCMP (no cf → cf) | NDD CMOV (no cf → cf) | PUSH2 (no cf → cf) |
+|---|---|---|---|
+| 505.mcf_r | 3 → 3 | 11 → 11 | 21 → 21 |
+| 557.xz_r | 33 → 34 | 44 → 29 | 218 → 214 |
+| 525.x264_r | 142 → 146 | 207 → 186 | 453 → 453 |
+| 538.imagick_r | 344 → 345 | 412 → 373 | 1,867 → 1,867 |
+| 502.gcc_r | 129 → 128 | 173 → 152 | 609 → 609 |
+
+**NDD CMOV decreases** with `+cf` enabled (847 → 781, -7.8%). This is because some conditional moves that previously used NDD CMOV (3-operand register form) are now lowered as CFCMOV (conditional memory load) when the source was a memory operand. CFCMOV can load directly from memory conditionally, making the separate load + NDD CMOV unnecessary.
+
+### 2d.3 Top Files by CFCMOV Density
+
+| Rank | File | CFCMOV | Benchmark | Domain |
+|---|---|---|---|---|
+| 1 | `x264_src_encoder_analyse.s` | 87 | 525.x264_r | Video encoding analysis |
+| 2 | `magick_quantum-export.s` | 79 | 538.imagick_r | Pixel export |
+| 3 | `mini-gmp.s` | 70 | 502.gcc_r | Arbitrary precision math |
+| 4 | `decNumber.s` | 69 | 502.gcc_r | Decimal arithmetic |
+| 5 | `x264_src_encoder_encoder.s` | 52 | 525.x264_r | Video encoder core |
+
+### 2d.4 Combined APX Instruction Summary (All Features Enabled)
+
+| Instruction | `-mapxf` only | `-mapxf +cf` | Delta |
+|---|---|---|---|
+| CCMP | 651 | 656 | +5 |
+| CTEST | 425 | 436 | +11 |
+| NDD CMOV | 847 | 781 | -66 |
+| CFCMOV | 0 | **1,120** | **+1,120** |
+| PUSH2 | 3,168 | 3,164 | -4 |
+| POP2 | 3,555 | 3,551 | -4 |
+| **TOTAL** | **8,646** | **9,708** | **+1,062** |
+
+Enabling `+cf` adds **1,062 net new APX instructions** (12.3% increase) and eliminates **634 conditional branches** across 265 source files.
+
+### 2d.5 Implications
+
+1. **Feature flag fragmentation has real cost**: 1,120 CFCMOV instructions and 634 branch eliminations are left on the table by the default `-mapxf` flag.
+2. **CFCMOV interacts with NDD CMOV**: enabling one feature changes how another is used — 66 NDD CMOVs became unnecessary because CFCMOV handles the conditional memory load directly.
+3. **Nearly half of all files benefit**: 45% of compiled files contain at least one CFCMOV, showing this isn't a niche optimization.
+4. **The highest-impact files are compute-intensive**: video encoding, pixel processing, and arbitrary-precision math — exactly the workloads where branch elimination matters most.
+
 ### Next Steps
 - [ ] Set up CSmith pipeline for context-dependent testing
-- [ ] Investigate why CFCMOV doesn't fire for loop-carried conditional memory accesses
-- [ ] Quantify conditional load/store patterns in SPEC that would benefit from CFCMOV
+- [ ] Deep-dive case study: pick a top CFCMOV file and trace how SimplifyCFG hoists the conditional access
