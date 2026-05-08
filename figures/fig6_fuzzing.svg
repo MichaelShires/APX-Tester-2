@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="162" font-family="Arial, Helvetica, sans-serif">
+  <rect width="760" height="162" fill="white"/>
+
+  <!-- Caption -->
+  <text x="380" y="16" text-anchor="middle" font-size="10" fill="#333">
+    <tspan font-weight="bold">Table 3.</tspan>
+    <tspan font-style="italic"> Fuzzing Campaign Results</tspan>
+  </text>
+
+  <!-- toprule -->
+  <line x1="95" y1="24" x2="665" y2="24" stroke="black" stroke-width="2"/>
+
+  <!-- Column headers -->
+  <text x="95"  y="38" font-size="11" font-weight="bold" fill="#000">Outcome</text>
+  <text x="385" y="38" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Initial</text>
+  <text x="530" y="38" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Extended</text>
+  <text x="661" y="38" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Combined</text>
+
+  <!-- midrule -->
+  <line x1="95" y1="42" x2="665" y2="42" stroke="black" stroke-width="1"/>
+
+  <!-- Match -->
+  <text x="95"  y="56" font-size="11" fill="#000">Checksum match (all 3 paths)</text>
+  <text x="385" y="56" text-anchor="end" font-size="11" fill="#000">90</text>
+  <text x="530" y="56" text-anchor="end" font-size="11" fill="#000">456</text>
+  <text x="661" y="56" text-anchor="end" font-size="11" fill="#000">546</text>
+
+  <!-- Mismatch -->
+  <text x="95"  y="74" font-size="11" fill="#000">Mismatch (potential miscompile)</text>
+  <text x="385" y="74" text-anchor="end" font-size="11" fill="#000">0</text>
+  <text x="530" y="74" text-anchor="end" font-size="11" fill="#000">0</text>
+  <text x="661" y="74" text-anchor="end" font-size="11" font-weight="bold" fill="#000">0</text>
+
+  <!-- Crash -->
+  <text x="95"  y="92" font-size="11" fill="#000">Crash (APX path, baseline ok)</text>
+  <text x="385" y="92" text-anchor="end" font-size="11" fill="#000">0</text>
+  <text x="530" y="92" text-anchor="end" font-size="11" fill="#000">0</text>
+  <text x="661" y="92" text-anchor="end" font-size="11" font-weight="bold" fill="#000">0</text>
+
+  <!-- midrule before total -->
+  <line x1="95" y1="97" x2="665" y2="97" stroke="black" stroke-width="0.8"/>
+
+  <!-- Total -->
+  <text x="95"  y="111" font-size="11" font-weight="bold" fill="#000">Programs tested</text>
+  <text x="385" y="111" text-anchor="end" font-size="11" font-weight="bold" fill="#000">90</text>
+  <text x="530" y="111" text-anchor="end" font-size="11" font-weight="bold" fill="#000">456</text>
+  <text x="661" y="111" text-anchor="end" font-size="11" font-weight="bold" fill="#000">546</text>
+
+  <!-- bottomrule -->
+  <line x1="95" y1="117" x2="665" y2="117" stroke="black" stroke-width="2"/>
+
+  <!-- Footnotes -->
+</svg>

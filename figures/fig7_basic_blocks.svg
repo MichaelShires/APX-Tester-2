@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="138" font-family="Arial, Helvetica, sans-serif">
+  <rect width="760" height="138" fill="white"/>
+
+  <text x="380" y="16" text-anchor="middle" font-size="10" fill="#333">
+    <tspan font-weight="bold">Table 4.</tspan>
+    <tspan font-style="italic"> Basic block and branch statistics across all 265 SPEC files. Avg size = total instructions / basic blocks. &#x394; relative to No APX baseline.</tspan>
+  </text>
+
+  <line x1="95" y1="24" x2="665" y2="24" stroke="black" stroke-width="2"/>
+
+  <text x="95"  y="38" font-size="11" font-weight="bold" fill="#000">Configuration</text>
+  <text x="355" y="38" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Basic blocks</text>
+  <text x="465" y="38" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Avg instr/block</text>
+  <text x="570" y="38" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Cond branches</text>
+  <text x="661" y="38" text-anchor="end" font-size="11" font-weight="bold" fill="#000">&#x394; branches</text>
+
+  <line x1="95" y1="42" x2="665" y2="42" stroke="black" stroke-width="1"/>
+
+  <!-- No APX -->
+  <text x="95"  y="56" font-size="11" fill="#000">No APX (-O2)</text>
+  <text x="355" y="56" text-anchor="end" font-size="11" fill="#000">100,977</text>
+  <text x="465" y="56" text-anchor="end" font-size="11" fill="#000">6.21</text>
+  <text x="570" y="56" text-anchor="end" font-size="11" fill="#000">52,745</text>
+  <text x="661" y="56" text-anchor="end" font-size="11" fill="#000">—</text>
+
+  <!-- APX -->
+  <text x="95"  y="74" font-size="11" fill="#000">APX (-mapxf)</text>
+  <text x="355" y="74" text-anchor="end" font-size="11" fill="#000">100,126</text>
+  <text x="465" y="74" text-anchor="end" font-size="11" fill="#000">5.78</text>
+  <text x="570" y="74" text-anchor="end" font-size="11" fill="#000">52,256</text>
+  <text x="661" y="74" text-anchor="end" font-size="11" fill="#000">&#x2212;489 (0.9%)</text>
+
+  <!-- APX+CF -->
+  <text x="95"  y="92" font-size="11" fill="#000">APX+CF (-mapxf +cf)</text>
+  <text x="355" y="92" text-anchor="end" font-size="11" fill="#000">99,034</text>
+  <text x="465" y="92" text-anchor="end" font-size="11" fill="#000">5.83</text>
+  <text x="570" y="92" text-anchor="end" font-size="11" fill="#000">51,622</text>
+  <text x="661" y="92" text-anchor="end" font-size="11" fill="#000">&#x2212;1,123 (2.1%)</text>
+
+  <line x1="95" y1="98" x2="665" y2="98" stroke="black" stroke-width="2"/>
+
+  <text x="95" y="114" font-size="9.5" fill="#555" font-style="italic">Avg instr/block falls from 6.21 to 5.78 with -mapxf (EGPR eliminates spill MOVs within blocks). APX+CF rises slightly to 5.83 because CFCMOV eliminates branches,</text>
+  <text x="95" y="127" font-size="9.5" fill="#555" font-style="italic">merging previously split blocks. Fewer, slightly larger blocks with fewer conditional exits reduces branch predictor pressure and widens the speculative execution window.</text>
+</svg>

@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="475" font-family="Arial, Helvetica, sans-serif">
+  <rect width="760" height="475" fill="#F8FAFC"/>
+
+  <!-- Title -->
+  <text x="380" y="25" text-anchor="middle" font-size="17" font-weight="bold" fill="#0F172A">APX Instruction Counts — SPEC CPU 2017</text>
+  <text x="380" y="44" text-anchor="middle" font-size="11" fill="#64748B">5 benchmarks · 265 source files · clang 22.1.1 · -O2 -mapxf</text>
+
+  <!-- Legend -->
+  <rect x="70"  y="60" width="12" height="12" fill="#1D4ED8" rx="2"/>
+  <text x="87"  y="71" font-size="11" fill="#334155">POP2</text>
+  <rect x="160" y="60" width="12" height="12" fill="#60A5FA" rx="2"/>
+  <text x="177" y="71" font-size="11" fill="#334155">PUSH2</text>
+  <rect x="255" y="60" width="12" height="12" fill="#7C3AED" rx="2"/>
+  <text x="272" y="71" font-size="11" fill="#334155">NDD CMOV</text>
+  <rect x="375" y="60" width="12" height="12" fill="#F59E0B" rx="2"/>
+  <text x="392" y="71" font-size="11" fill="#334155">CTEST</text>
+  <rect x="455" y="60" width="12" height="12" fill="#EF4444" rx="2"/>
+  <text x="472" y="71" font-size="11" fill="#334155">CCMP</text>
+  <text x="600" y="71" font-size="11" fill="#64748B" font-style="italic">Total APX = 8,646</text>
+
+  <!-- Y-axis line -->
+  <line x1="70" y1="90" x2="70" y2="408" stroke="#CBD5E1" stroke-width="1.5"/>
+  <!-- X-axis line -->
+  <line x1="70" y1="408" x2="745" y2="408" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Y-axis ticks and labels -->
+  <line x1="66" y1="408" x2="70" y2="408" stroke="#94A3B8" stroke-width="1"/>
+  <text x="60" y="412" text-anchor="end" font-size="10" fill="#64748B">0</text>
+
+  <line x1="66" y1="350" x2="70" y2="350" stroke="#94A3B8" stroke-width="1"/>
+  <text x="60" y="354" text-anchor="end" font-size="10" fill="#64748B">1,000</text>
+  <line x1="70" y1="350" x2="745" y2="350" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <line x1="66" y1="292" x2="70" y2="292" stroke="#94A3B8" stroke-width="1"/>
+  <text x="60" y="296" text-anchor="end" font-size="10" fill="#64748B">2,000</text>
+  <line x1="70" y1="292" x2="745" y2="292" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <line x1="66" y1="234" x2="70" y2="234" stroke="#94A3B8" stroke-width="1"/>
+  <text x="60" y="238" text-anchor="end" font-size="10" fill="#64748B">3,000</text>
+  <line x1="70" y1="234" x2="745" y2="234" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <line x1="66" y1="176" x2="70" y2="176" stroke="#94A3B8" stroke-width="1"/>
+  <text x="60" y="180" text-anchor="end" font-size="10" fill="#64748B">4,000</text>
+  <line x1="70" y1="176" x2="745" y2="176" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <line x1="66" y1="118" x2="70" y2="118" stroke="#94A3B8" stroke-width="1"/>
+  <text x="60" y="122" text-anchor="end" font-size="10" fill="#64748B">5,000</text>
+  <line x1="70" y1="118" x2="745" y2="118" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <!-- Y-axis title -->
+  <text transform="rotate(-90)" x="-250" y="18" text-anchor="middle" font-size="11" fill="#64748B">APX instructions</text>
+
+  <!-- ══════════════════════════════════════════════
+       BAR 1: 502.gcc_r  (total=1,663)
+       POP2=663 PUSH2=609 NDD=173 CTEST=89 CCMP=129
+       scale=0.058 px/unit, chart_bottom=408
+       POP2:  663*0.058=38.5→38  bottom y=408, top y=370
+       PUSH2: 609*0.058=35.3→35  bottom y=370, top y=335
+       NDD:   173*0.058=10.0→10  bottom y=335, top y=325
+       CTEST:  89*0.058=5.2→5    bottom y=325, top y=320
+       CCMP:  129*0.058=7.5→7    bottom y=320, top y=313
+       total px=95, bar top y=313
+  ══════════════════════════════════════════════ -->
+  <rect x="95"  y="370" width="85" height="38" fill="#1D4ED8"/>
+  <rect x="95"  y="335" width="85" height="35" fill="#60A5FA"/>
+  <rect x="95"  y="325" width="85" height="10" fill="#7C3AED"/>
+  <rect x="95"  y="320" width="85" height="5"  fill="#F59E0B"/>
+  <rect x="95"  y="313" width="85" height="7"  fill="#EF4444"/>
+  <text x="137" y="308" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">1,663</text>
+
+  <!-- ══════════════════════════════════════════════
+       BAR 2: 505.mcf_r  (total=56, minimum height 10px)
+       Internal proportions: POP2=21 PUSH2=21 NDD=11 CTEST=0 CCMP=3
+       Scaled to 10px: POP2=3.75→4 PUSH2=3.75→3 NDD=1.96→2 CCMP=0.54→1
+       bar top y = 408-10 = 398, marked not to scale
+  ══════════════════════════════════════════════ -->
+  <rect x="230" y="404" width="85" height="4"  fill="#1D4ED8"/>
+  <rect x="230" y="401" width="85" height="3"  fill="#60A5FA"/>
+  <rect x="230" y="399" width="85" height="2"  fill="#7C3AED"/>
+  <rect x="230" y="398" width="85" height="1"  fill="#EF4444"/>
+  <text x="272" y="393" text-anchor="middle" font-size="11" font-weight="bold" fill="#94A3B8">56 *</text>
+
+  <!-- ══════════════════════════════════════════════
+       BAR 3: 525.x264_r  (total=1,379)
+       POP2=486 PUSH2=453 NDD=207 CTEST=91 CCMP=142
+       POP2:  486*0.058=28.2→28  bottom y=408, top y=380
+       PUSH2: 453*0.058=26.3→26  bottom y=380, top y=354
+       NDD:   207*0.058=12.0→12  bottom y=354, top y=342
+       CTEST:  91*0.058=5.3→5    bottom y=342, top y=337
+       CCMP:  142*0.058=8.2→8    bottom y=337, top y=329
+       total=79, bar top y=329
+  ══════════════════════════════════════════════ -->
+  <rect x="365" y="380" width="85" height="28" fill="#1D4ED8"/>
+  <rect x="365" y="354" width="85" height="26" fill="#60A5FA"/>
+  <rect x="365" y="342" width="85" height="12" fill="#7C3AED"/>
+  <rect x="365" y="337" width="85" height="5"  fill="#F59E0B"/>
+  <rect x="365" y="329" width="85" height="8"  fill="#EF4444"/>
+  <text x="407" y="324" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">1,379</text>
+
+  <!-- ══════════════════════════════════════════════
+       BAR 4: 538.imagick_r  (total=4,977)
+       POP2=2154 PUSH2=1867 NDD=412 CTEST=200 CCMP=344
+       POP2:  2154*0.058=124.9→125  bottom y=408, top y=283
+       PUSH2: 1867*0.058=108.3→108  bottom y=283, top y=175
+       NDD:    412*0.058=23.9→24    bottom y=175, top y=151
+       CTEST:  200*0.058=11.6→12    bottom y=151, top y=139
+       CCMP:   344*0.058=19.9→20    bottom y=139, top y=119
+       total=289, bar top y=119
+  ══════════════════════════════════════════════ -->
+  <rect x="500" y="283" width="85" height="125" fill="#1D4ED8"/>
+  <rect x="500" y="175" width="85" height="108" fill="#60A5FA"/>
+  <rect x="500" y="151" width="85" height="24"  fill="#7C3AED"/>
+  <rect x="500" y="139" width="85" height="12"  fill="#F59E0B"/>
+  <rect x="500" y="119" width="85" height="20"  fill="#EF4444"/>
+  <text x="542" y="113" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">4,977</text>
+
+  <!-- ══════════════════════════════════════════════
+       BAR 5: 557.xz_r  (total=571)
+       POP2=231 PUSH2=218 NDD=44 CTEST=45 CCMP=33
+       POP2:  231*0.058=13.4→13  bottom y=408, top y=395
+       PUSH2: 218*0.058=12.6→13  bottom y=395, top y=382
+       NDD:    44*0.058=2.6→3    bottom y=382, top y=379
+       CTEST:  45*0.058=2.6→3    bottom y=379, top y=376
+       CCMP:   33*0.058=1.9→2    bottom y=376, top y=374
+       total=34, bar top y=374
+  ══════════════════════════════════════════════ -->
+  <rect x="635" y="395" width="85" height="13" fill="#1D4ED8"/>
+  <rect x="635" y="382" width="85" height="13" fill="#60A5FA"/>
+  <rect x="635" y="379" width="85" height="3"  fill="#7C3AED"/>
+  <rect x="635" y="376" width="85" height="3"  fill="#F59E0B"/>
+  <rect x="635" y="374" width="85" height="2"  fill="#EF4444"/>
+  <text x="677" y="369" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">571</text>
+
+  <!-- X-axis labels -->
+  <text x="137" y="424" text-anchor="middle" font-size="11" fill="#334155" font-weight="bold">502</text>
+  <text x="137" y="439" text-anchor="middle" font-size="11" fill="#64748B">gcc_r</text>
+
+  <text x="272" y="424" text-anchor="middle" font-size="11" fill="#334155" font-weight="bold">505</text>
+  <text x="272" y="439" text-anchor="middle" font-size="11" fill="#64748B">mcf_r</text>
+
+  <text x="407" y="424" text-anchor="middle" font-size="11" fill="#334155" font-weight="bold">525</text>
+  <text x="407" y="439" text-anchor="middle" font-size="11" fill="#64748B">x264_r</text>
+
+  <text x="542" y="424" text-anchor="middle" font-size="11" fill="#334155" font-weight="bold">538</text>
+  <text x="542" y="439" text-anchor="middle" font-size="11" fill="#64748B">imagick_r</text>
+
+  <text x="677" y="424" text-anchor="middle" font-size="11" fill="#334155" font-weight="bold">557</text>
+  <text x="677" y="439" text-anchor="middle" font-size="11" fill="#64748B">xz_r</text>
+
+  <!-- PUSH2/POP2 annotation on imagick bar -->
+  <line x1="588" y1="229" x2="620" y2="215" stroke="#64748B" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="624" y="212" font-size="10" fill="#334155" font-weight="bold">PUSH2+POP2</text>
+  <text x="624" y="224" font-size="10" fill="#64748B">= 77.8% of all APX</text>
+
+  <!-- Footnote -->
+  <text x="70" y="462" font-size="10" fill="#94A3B8" font-style="italic">* 505.mcf_r bar height not to scale (56 total instructions — sparse pointer-chasing workload)</text>
+</svg>

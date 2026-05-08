@@ -9,3 +9,13 @@ DerivedData/
 *.s
 SPEC/
 docker/sde-external-*/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz

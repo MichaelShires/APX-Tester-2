@@ -1,0 +1,174 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" font-family="Arial, Helvetica, sans-serif">
+  <rect width="760" height="360" fill="white"/>
+
+  <!-- ═══════════════════════════════════════════════════
+       TABLE 1: CCMP and NDD CMOV conversion
+  ═══════════════════════════════════════════════════ -->
+
+  <!-- Caption -->
+  <text x="380" y="16" text-anchor="middle" font-size="10" fill="#333">
+    <tspan font-weight="bold">Table 1.</tspan>
+    <tspan font-style="italic"> CCMP and NDD CMOV conversion efficiency.</tspan>
+  </text>
+
+  <!-- toprule -->
+  <line x1="95" y1="24" x2="665" y2="24" stroke="black" stroke-width="2"/>
+
+  <!-- Group headers -->
+  <text x="367" y="37" text-anchor="middle" font-size="11" font-weight="bold" fill="#000">CCMP / CTEST</text>
+  <text x="580" y="37" text-anchor="middle" font-size="11" font-weight="bold" fill="#000">NDD CMOV</text>
+
+  <!-- cmidrule under CCMP group (cols 1-3) -->
+  <line x1="245" y1="41" x2="490" y2="41" stroke="black" stroke-width="0.8"/>
+  <!-- cmidrule under NDD group (cols 4-5) -->
+  <line x1="495" y1="41" x2="665" y2="41" stroke="black" stroke-width="0.8"/>
+
+  <!-- Column headers -->
+  <text x="95"  y="55" font-size="11" font-weight="bold" fill="#000">Benchmark</text>
+  <text x="331" y="55" text-anchor="end" font-size="11" font-weight="bold" fill="#000">SETcc chains</text>
+  <text x="416" y="55" text-anchor="end" font-size="11" font-weight="bold" fill="#000">CCMP emitted</text>
+  <text x="486" y="55" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Rate</text>
+  <text x="586" y="55" text-anchor="end" font-size="11" font-weight="bold" fill="#000">MOV+CMOV pairs</text>
+  <text x="661" y="55" text-anchor="end" font-size="11" font-weight="bold" fill="#000">NDD emitted</text>
+
+  <!-- midrule (under column headers) -->
+  <line x1="95" y1="59" x2="665" y2="59" stroke="black" stroke-width="1"/>
+
+  <!-- Data rows (18px each) -->
+  <!-- 502.gcc_r -->
+  <text x="95"  y="73" font-size="11" fill="#000">502.gcc\_r</text>
+  <text x="331" y="73" text-anchor="end" font-size="11" fill="#000">129</text>
+  <text x="416" y="73" text-anchor="end" font-size="11" fill="#000">129</text>
+  <text x="486" y="73" text-anchor="end" font-size="11" fill="#000">100%</text>
+  <text x="586" y="73" text-anchor="end" font-size="11" fill="#000">39</text>
+  <text x="661" y="73" text-anchor="end" font-size="11" fill="#000">173</text>
+
+  <!-- 505.mcf_r -->
+  <text x="95"  y="91" font-size="11" fill="#000">505.mcf\_r</text>
+  <text x="331" y="91" text-anchor="end" font-size="11" fill="#000">0</text>
+  <text x="416" y="91" text-anchor="end" font-size="11" fill="#000">3</text>
+  <text x="486" y="91" text-anchor="end" font-size="11" fill="#000">—</text>
+  <text x="586" y="91" text-anchor="end" font-size="11" fill="#000">2</text>
+  <text x="661" y="91" text-anchor="end" font-size="11" fill="#000">11</text>
+
+  <!-- 525.x264_r -->
+  <text x="95"  y="109" font-size="11" fill="#000">525.x264\_r</text>
+  <text x="331" y="109" text-anchor="end" font-size="11" fill="#000">195</text>
+  <text x="416" y="109" text-anchor="end" font-size="11" fill="#000">142</text>
+  <text x="486" y="109" text-anchor="end" font-size="11" fill="#000">73%</text>
+  <text x="586" y="109" text-anchor="end" font-size="11" fill="#000">63</text>
+  <text x="661" y="109" text-anchor="end" font-size="11" fill="#000">207</text>
+
+  <!-- 538.imagick_r -->
+  <text x="95"  y="127" font-size="11" fill="#000">538.imagick\_r</text>
+  <text x="331" y="127" text-anchor="end" font-size="11" fill="#000">253</text>
+  <text x="416" y="127" text-anchor="end" font-size="11" fill="#000">344</text>
+  <text x="486" y="127" text-anchor="end" font-size="11" fill="#000">136%</text>
+  <text x="586" y="127" text-anchor="end" font-size="11" fill="#000">289</text>
+  <text x="661" y="127" text-anchor="end" font-size="11" fill="#000">412</text>
+
+  <!-- 557.xz_r -->
+  <text x="95"  y="145" font-size="11" fill="#000">557.xz\_r</text>
+  <text x="331" y="145" text-anchor="end" font-size="11" fill="#000">45</text>
+  <text x="416" y="145" text-anchor="end" font-size="11" fill="#000">33</text>
+  <text x="486" y="145" text-anchor="end" font-size="11" fill="#000">73%</text>
+  <text x="586" y="145" text-anchor="end" font-size="11" fill="#000">16</text>
+  <text x="661" y="145" text-anchor="end" font-size="11" fill="#000">44</text>
+
+  <!-- midrule before total -->
+  <line x1="95" y1="150" x2="665" y2="150" stroke="black" stroke-width="0.8"/>
+
+  <!-- Total row -->
+  <text x="95"  y="164" font-size="11" font-weight="bold" fill="#000">Total</text>
+  <text x="331" y="164" text-anchor="end" font-size="11" font-weight="bold" fill="#000">622</text>
+  <text x="416" y="164" text-anchor="end" font-size="11" font-weight="bold" fill="#000">651</text>
+  <text x="486" y="164" text-anchor="end" font-size="11" font-weight="bold" fill="#000">105%</text>
+  <text x="586" y="164" text-anchor="end" font-size="11" font-weight="bold" fill="#000">409</text>
+  <text x="661" y="164" text-anchor="end" font-size="11" font-weight="bold" fill="#000">847</text>
+
+  <!-- bottomrule -->
+  <line x1="95" y1="170" x2="665" y2="170" stroke="black" stroke-width="2"/>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       TABLE 2: PUSH2/POP2 pairing efficiency
+  ═══════════════════════════════════════════════════ -->
+
+  <!-- Caption -->
+  <text x="380" y="194" text-anchor="middle" font-size="10" fill="#333">
+    <tspan font-weight="bold">Table 2.</tspan>
+    <tspan font-style="italic"> PUSH2/POP2 pairing efficiency.</tspan>
+  </text>
+
+  <!-- toprule -->
+  <line x1="95" y1="202" x2="665" y2="202" stroke="black" stroke-width="2"/>
+
+  <!-- Column headers -->
+  <text x="95"  y="216" font-size="11" font-weight="bold" fill="#000">Benchmark</text>
+  <text x="351" y="216" text-anchor="end" font-size="11" font-weight="bold" fill="#000">pushq (non-APX)</text>
+  <text x="426" y="216" text-anchor="end" font-size="11" font-weight="bold" fill="#000">push2p</text>
+  <text x="506" y="216" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Replaced</text>
+  <text x="581" y="216" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Unpaired</text>
+  <text x="661" y="216" text-anchor="end" font-size="11" font-weight="bold" fill="#000">Pair rate</text>
+
+  <!-- midrule -->
+  <line x1="95" y1="220" x2="665" y2="220" stroke="black" stroke-width="1"/>
+
+  <!-- Data rows -->
+  <!-- 502.gcc_r -->
+  <text x="95"  y="234" font-size="11" fill="#000">502.gcc\_r</text>
+  <text x="351" y="234" text-anchor="end" font-size="11" fill="#000">2,406</text>
+  <text x="426" y="234" text-anchor="end" font-size="11" fill="#000">609</text>
+  <text x="506" y="234" text-anchor="end" font-size="11" fill="#000">1,218</text>
+  <text x="581" y="234" text-anchor="end" font-size="11" fill="#000">137</text>
+  <text x="661" y="234" text-anchor="end" font-size="11" fill="#000">89%</text>
+
+  <!-- 505.mcf_r -->
+  <text x="95"  y="252" font-size="11" fill="#000">505.mcf\_r</text>
+  <text x="351" y="252" text-anchor="end" font-size="11" fill="#000">124</text>
+  <text x="426" y="252" text-anchor="end" font-size="11" fill="#000">21</text>
+  <text x="506" y="252" text-anchor="end" font-size="11" fill="#000">42</text>
+  <text x="581" y="252" text-anchor="end" font-size="11" fill="#000">23</text>
+  <text x="661" y="252" text-anchor="end" font-size="11" fill="#000">65%</text>
+
+  <!-- 525.x264_r -->
+  <text x="95"  y="270" font-size="11" fill="#000">525.x264\_r</text>
+  <text x="351" y="270" text-anchor="end" font-size="11" fill="#000">2,297</text>
+  <text x="426" y="270" text-anchor="end" font-size="11" fill="#000">453</text>
+  <text x="506" y="270" text-anchor="end" font-size="11" fill="#000">906</text>
+  <text x="581" y="270" text-anchor="end" font-size="11" fill="#000">439</text>
+  <text x="661" y="270" text-anchor="end" font-size="11" fill="#000">67%</text>
+
+  <!-- 538.imagick_r -->
+  <text x="95"  y="288" font-size="11" fill="#000">538.imagick\_r</text>
+  <text x="351" y="288" text-anchor="end" font-size="11" fill="#000">10,974</text>
+  <text x="426" y="288" text-anchor="end" font-size="11" fill="#000">1,867</text>
+  <text x="506" y="288" text-anchor="end" font-size="11" fill="#000">3,734</text>
+  <text x="581" y="288" text-anchor="end" font-size="11" fill="#000">3,921</text>
+  <text x="661" y="288" text-anchor="end" font-size="11" fill="#000">48%</text>
+
+  <!-- 557.xz_r -->
+  <text x="95"  y="306" font-size="11" fill="#000">557.xz\_r</text>
+  <text x="351" y="306" text-anchor="end" font-size="11" fill="#000">1,027</text>
+  <text x="426" y="306" text-anchor="end" font-size="11" fill="#000">218</text>
+  <text x="506" y="306" text-anchor="end" font-size="11" fill="#000">436</text>
+  <text x="581" y="306" text-anchor="end" font-size="11" fill="#000">148</text>
+  <text x="661" y="306" text-anchor="end" font-size="11" fill="#000">74%</text>
+
+  <!-- midrule before total -->
+  <line x1="95" y1="311" x2="665" y2="311" stroke="black" stroke-width="0.8"/>
+
+  <!-- Total row -->
+  <text x="95"  y="325" font-size="11" font-weight="bold" fill="#000">Total</text>
+  <text x="351" y="325" text-anchor="end" font-size="11" font-weight="bold" fill="#000">16,828</text>
+  <text x="426" y="325" text-anchor="end" font-size="11" font-weight="bold" fill="#000">3,168</text>
+  <text x="506" y="325" text-anchor="end" font-size="11" font-weight="bold" fill="#000">6,336</text>
+  <text x="581" y="325" text-anchor="end" font-size="11" font-weight="bold" fill="#000">4,668</text>
+  <text x="661" y="325" text-anchor="end" font-size="11" font-weight="bold" fill="#000">—</text>
+
+  <!-- bottomrule -->
+  <line x1="95" y1="331" x2="665" y2="331" stroke="black" stroke-width="2"/>
+
+  <!-- footnote -->
+  <text x="95" y="348" font-size="9.5" fill="#555" font-style="italic">Unpaired pushq remain due to odd callee-saved register counts, frame pointer isolation, and stack alignment constraints — not compiler deficiency.</text>
+</svg>

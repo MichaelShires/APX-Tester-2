@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="540" font-family="Arial, Helvetica, sans-serif">
+  <rect width="760" height="540" fill="#F8FAFC"/>
+
+  <!-- Title -->
+  <text x="380" y="24" text-anchor="middle" font-size="18" font-weight="bold" fill="#0F172A">Adversarial Context: APX Pattern Survival</text>
+  <text x="380" y="44" text-anchor="middle" font-size="12" fill="#64748B">Phase 4 results — 12 of 23 functions failed (52% failure rate)</text>
+
+  <!-- Table background -->
+  <rect x="10" y="56" width="740" height="444" fill="white" rx="6"/>
+
+  <!-- Header row background -->
+  <rect x="10" y="56" width="740" height="46" fill="#1E293B" rx="6"/>
+  <!-- Cover bottom-rounded corners of header to square them off -->
+  <rect x="10" y="80" width="740" height="22" fill="#1E293B"/>
+
+  <!-- Header dividers -->
+  <line x1="260" y1="56" x2="260" y2="102" stroke="#334155" stroke-width="1"/>
+  <line x1="380" y1="56" x2="380" y2="102" stroke="#334155" stroke-width="1"/>
+  <line x1="500" y1="56" x2="500" y2="102" stroke="#334155" stroke-width="1"/>
+  <line x1="620" y1="56" x2="620" y2="102" stroke="#334155" stroke-width="1"/>
+
+  <!-- Header text -->
+  <text x="20" y="84" font-size="12" font-weight="bold" fill="white">Pattern Breaker</text>
+  <text x="320" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="white">CCMP</text>
+  <text x="440" y="77" text-anchor="middle" font-size="12" font-weight="bold" fill="white">NDD</text>
+  <text x="440" y="93" text-anchor="middle" font-size="12" font-weight="bold" fill="white">CMOV</text>
+  <text x="560" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="white">CFCMOV</text>
+  <text x="685" y="77" text-anchor="middle" font-size="12" font-weight="bold" fill="white">PUSH2/</text>
+  <text x="685" y="93" text-anchor="middle" font-size="12" font-weight="bold" fill="white">POP2</text>
+
+  <!-- ── Row 0: Memory operands ── -->
+  <rect x="10"  y="102" width="250" height="50" fill="white"   stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="102" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="102" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="102" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="102" width="130" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="123" font-size="12" font-weight="bold" fill="#334155">Memory operands</text>
+  <text x="20"  y="140" font-size="11" fill="#64748B">(pointer dereferences)</text>
+  <text x="320" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="440" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="560" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="685" y="131" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+
+  <!-- ── Row 1: Volatile ── -->
+  <rect x="10"  y="152" width="250" height="50" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="152" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="152" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="152" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="152" width="130" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="182" font-size="12" font-weight="bold" fill="#334155">Volatile</text>
+  <text x="320" y="181" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="440" y="181" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="560" y="181" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="685" y="181" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+
+  <!-- ── Row 2: setjmp ── -->
+  <rect x="10"  y="202" width="250" height="50" fill="white"   stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="202" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="202" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="202" width="120" height="50" fill="#FEF3C7" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="202" width="130" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="232" font-size="12" font-weight="bold" fill="#334155">setjmp / longjmp</text>
+  <text x="320" y="231" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="440" y="231" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="560" y="231" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400E">untested</text>
+  <text x="685" y="231" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+
+  <!-- ── Row 3: Switch dispatch ── -->
+  <rect x="10"  y="252" width="250" height="50" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="252" width="120" height="50" fill="#FEE2E2" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="252" width="120" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="252" width="120" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="252" width="130" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="282" font-size="12" font-weight="bold" fill="#334155">Switch dispatch</text>
+  <text x="320" y="281" text-anchor="middle" font-size="11" font-weight="bold" fill="#B91C1C">BROKEN</text>
+  <text x="440" y="281" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+  <text x="560" y="281" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+  <text x="685" y="281" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+
+  <!-- ── Row 4: Computed goto ── -->
+  <rect x="10"  y="302" width="250" height="50" fill="white"   stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="302" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="302" width="120" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="302" width="120" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="302" width="130" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="332" font-size="12" font-weight="bold" fill="#334155">Computed goto</text>
+  <text x="320" y="331" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="440" y="331" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+  <text x="560" y="331" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+  <text x="685" y="331" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+
+  <!-- ── Row 5: Side effects in condition ── -->
+  <rect x="10"  y="352" width="250" height="50" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="352" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="352" width="120" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="352" width="120" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="352" width="130" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="373" font-size="12" font-weight="bold" fill="#334155">Side effects</text>
+  <text x="20"  y="390" font-size="11" fill="#64748B">in condition</text>
+  <text x="320" y="381" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="440" y="381" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+  <text x="560" y="381" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+  <text x="685" y="381" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+
+  <!-- ── Row 6: Interleaved calls ── -->
+  <rect x="10"  y="402" width="250" height="50" fill="white"   stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="402" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="402" width="120" height="50" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="402" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="402" width="130" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="432" font-size="12" font-weight="bold" fill="#334155">Interleaved calls</text>
+  <text x="320" y="431" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="440" y="431" text-anchor="middle" font-size="11" fill="#94A3B8">N/A</text>
+  <text x="560" y="431" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="685" y="431" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+
+  <!-- ── Row 7: Inlining ── -->
+  <rect x="10"  y="452" width="250" height="50" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="260" y="452" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="380" y="452" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="452" width="120" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="620" y="452" width="130" height="50" fill="#D1FAE5" stroke="#E2E8F0" stroke-width="1"/>
+
+  <text x="20"  y="482" font-size="12" font-weight="bold" fill="#334155">Inlining</text>
+  <text x="320" y="481" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="440" y="481" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="560" y="481" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+  <text x="685" y="481" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">OK</text>
+
+  <!-- Outer table border -->
+  <rect x="10" y="56" width="740" height="446" fill="none" stroke="#CBD5E1" stroke-width="1.5" rx="6"/>
+
+  <!-- Legend -->
+  <rect x="10"  y="510" width="14" height="14" fill="#FEE2E2" stroke="#FECACA" stroke-width="1" rx="2"/>
+  <text x="29" y="522" font-size="11" fill="#64748B">BROKEN — pattern not emitted</text>
+
+  <rect x="220" y="510" width="14" height="14" fill="#D1FAE5" stroke="#6EE7B7" stroke-width="1" rx="2"/>
+  <text x="239" y="522" font-size="11" fill="#64748B">OK — pattern emitted correctly</text>
+
+  <rect x="440" y="510" width="14" height="14" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1" rx="2"/>
+  <text x="459" y="522" font-size="11" fill="#64748B">N/A — instruction not applicable</text>
+
+  <rect x="640" y="510" width="14" height="14" fill="#FEF3C7" stroke="#FCD34D" stroke-width="1" rx="2"/>
+  <text x="659" y="522" font-size="11" fill="#64748B">untested</text>
+</svg>

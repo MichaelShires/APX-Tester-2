@@ -16,6 +16,10 @@ let package = Package(
             name: "apx-tester",
             targets: ["APXTesterCLI"]
         ),
+        .executable(
+            name: "APXTesterApp",
+            targets: ["APXTesterApp"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.3.0"),
@@ -34,6 +38,12 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
             path: "Sources/APXTesterCLI"
+        ),
+        // macOS SwiftUI app
+        .executableTarget(
+            name: "APXTesterApp",
+            dependencies: ["APXCore"],
+            path: "Sources/APXTesterApp"
         ),
         // Tests
         .testTarget(

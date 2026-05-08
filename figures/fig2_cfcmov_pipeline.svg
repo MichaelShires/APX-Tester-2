@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="600" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+
+  <rect width="760" height="600" fill="#F8FAFC"/>
+
+  <!-- Title -->
+  <text x="380" y="25" text-anchor="middle" font-size="18" font-weight="bold" fill="#0F172A">CFCMOV Transformation Pipeline</text>
+
+  <!-- Shared: Source Code -->
+  <rect x="190" y="36" width="380" height="50" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5" rx="6"/>
+  <text x="380" y="56" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Source code</text>
+  <text x="380" y="75" text-anchor="middle" font-size="11" font-style="italic" fill="#64748B">if (cond) return *ptr;   return 0;</text>
+
+  <!-- Arrow down -->
+  <line x1="380" y1="86" x2="380" y2="104" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Shared: LLVM IR -->
+  <rect x="145" y="106" width="470" height="66" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5" rx="6"/>
+  <text x="380" y="126" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">LLVM IR  —  diamond pattern (identical with or without +cf)</text>
+  <text x="380" y="146" text-anchor="middle" font-size="11" font-style="italic" fill="#64748B">br i1 %cond, bb_load, bb_ret</text>
+  <text x="380" y="162" text-anchor="middle" font-size="11" font-style="italic" fill="#64748B">%v = load i32, ptr %1   ·   phi i32 [%v, %load], [0, %entry]</text>
+
+  <!-- Arrow down -->
+  <line x1="380" y1="172" x2="380" y2="190" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Shared: SimplifyCFG -->
+  <rect x="205" y="192" width="350" height="50" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5" rx="6"/>
+  <text x="380" y="212" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">SimplifyCFGPass</text>
+  <text x="380" y="232" text-anchor="middle" font-size="11" fill="#64748B">TTI.hasConditionalLoadStoreForType()</text>
+
+  <!-- Fork lines from SimplifyCFG bottom (y=242) to column headers (y=276) -->
+  <line x1="380" y1="242" x2="185" y2="276" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="380" y1="242" x2="575" y2="276" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- LEFT COLUMN: +cf enabled -->
+  <rect x="30" y="278" width="310" height="26" fill="#D1FAE5" stroke="#059669" stroke-width="1.5" rx="13"/>
+  <text x="185" y="296" text-anchor="middle" font-size="13" font-weight="bold" fill="#065F46">+cf enabled</text>
+
+  <!-- Left Box 1: returns true -->
+  <rect x="30" y="308" width="310" height="44" fill="#ECFDF5" stroke="#6EE7B7" stroke-width="1.5" rx="5"/>
+  <text x="185" y="327" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">hasConditionalLoadStoreForType()</text>
+  <text x="185" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="#059669">returns  true</text>
+
+  <line x1="185" y1="352" x2="185" y2="368" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+  <!-- Left Box 2: masked load -->
+  <rect x="30" y="370" width="310" height="58" fill="#ECFDF5" stroke="#6EE7B7" stroke-width="1.5" rx="5"/>
+  <text x="185" y="390" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">Branch replaced with masked load</text>
+  <text x="185" y="408" text-anchor="middle" font-size="11" font-style="italic" fill="#374151">llvm.masked.load.v1i32.p0(</text>
+  <text x="185" y="422" text-anchor="middle" font-size="11" font-style="italic" fill="#374151">  ptr %1, mask %cond, passthru 0)</text>
+
+  <line x1="185" y1="428" x2="185" y2="444" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+  <!-- Left Box 3: ISel -->
+  <rect x="30" y="446" width="310" height="44" fill="#ECFDF5" stroke="#6EE7B7" stroke-width="1.5" rx="5"/>
+  <text x="185" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#065F46">Instruction Selection</text>
+  <text x="185" y="483" text-anchor="middle" font-size="11" fill="#374151">masked.load  →  X86ISD::CLOAD  →  cfcmovne</text>
+
+  <line x1="185" y1="490" x2="185" y2="506" stroke="#059669" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+  <!-- Left Box 4: Output assembly (green) -->
+  <rect x="30" y="508" width="310" height="76" fill="#059669" stroke="#047857" stroke-width="2" rx="5"/>
+  <text x="185" y="530" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Output assembly</text>
+  <text x="185" y="550" text-anchor="middle" font-size="12" font-style="italic" fill="#D1FAE5">testl      %edi, %edi</text>
+  <text x="185" y="568" text-anchor="middle" font-size="12" font-style="italic" fill="#D1FAE5">cfcmovnel  (%rsi), %eax</text>
+  <text x="185" y="580" text-anchor="middle" font-size="10" fill="#A7F3D0">branch eliminated entirely</text>
+
+  <!-- RIGHT COLUMN: no +cf -->
+  <rect x="420" y="278" width="310" height="26" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.5" rx="13"/>
+  <text x="575" y="296" text-anchor="middle" font-size="13" font-weight="bold" fill="#7F1D1D">no +cf</text>
+
+  <!-- Right Box 1: returns false -->
+  <rect x="420" y="308" width="310" height="44" fill="#FEF2F2" stroke="#FECACA" stroke-width="1.5" rx="5"/>
+  <text x="575" y="327" text-anchor="middle" font-size="11" font-weight="bold" fill="#7F1D1D">hasConditionalLoadStoreForType()</text>
+  <text x="575" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="#DC2626">returns  false</text>
+
+  <line x1="575" y1="352" x2="575" y2="368" stroke="#DC2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+  <!-- Right Box 2: hoist blocked -->
+  <rect x="420" y="370" width="310" height="58" fill="#FEF2F2" stroke="#FECACA" stroke-width="1.5" rx="5"/>
+  <text x="575" y="390" text-anchor="middle" font-size="11" font-weight="bold" fill="#7F1D1D">Speculative hoist blocked</text>
+  <text x="575" y="408" text-anchor="middle" font-size="11" fill="#374151">Load may fault on false path —</text>
+  <text x="575" y="422" text-anchor="middle" font-size="11" fill="#374151">unsafe to hoist without CF support</text>
+
+  <line x1="575" y1="428" x2="575" y2="444" stroke="#DC2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+  <!-- Right Box 3: ISel -->
+  <rect x="420" y="446" width="310" height="44" fill="#FEF2F2" stroke="#FECACA" stroke-width="1.5" rx="5"/>
+  <text x="575" y="465" text-anchor="middle" font-size="11" font-weight="bold" fill="#7F1D1D">Instruction Selection</text>
+  <text x="575" y="483" text-anchor="middle" font-size="11" fill="#374151">diamond CFG lowered to branches</text>
+
+  <line x1="575" y1="490" x2="575" y2="506" stroke="#DC2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+  <!-- Right Box 4: Output assembly (red) -->
+  <rect x="420" y="508" width="310" height="76" fill="#DC2626" stroke="#B91C1C" stroke-width="2" rx="5"/>
+  <text x="575" y="530" text-anchor="middle" font-size="12" font-weight="bold" fill="white">Output assembly</text>
+  <text x="575" y="550" text-anchor="middle" font-size="12" font-style="italic" fill="#FEE2E2">testl   %edi, %edi</text>
+  <text x="575" y="566" text-anchor="middle" font-size="12" font-style="italic" fill="#FEE2E2">je      .Lreturn_zero</text>
+  <text x="575" y="580" text-anchor="middle" font-size="12" font-style="italic" fill="#FEE2E2">movl    (%rsi), %eax</text>
+</svg>
