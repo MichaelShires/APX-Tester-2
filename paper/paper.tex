@@ -58,14 +58,14 @@ faulting moves (CFCMOV), and paired push/pop (PUSH2/POP2). Compiler
 support for new ISA features is security-critical: a miscompilation
 under APX-specific optimization paths can silently alter program
 semantics, creating vulnerabilities invisible to source-level review.
-We apply three complementary security testing methodologies to LLVM's
+I apply three complementary security testing methodologies to LLVM's
 APX implementation: (1)~static emission analysis across 265 SPEC~CPU
 2017 source files, (2)~adversarial context testing with hand-crafted
 inputs targeting known compiler-fragile patterns, and (3)~IR-level
-differential fuzzing of 546 randomly generated programs. We find that
+differential fuzzing of 546 randomly generated programs. I find that
 LLVM's APX code generation is \emph{correct but brittle}: zero
 semantic mismatches across all fuzzing campaigns, but 52\% of
-adversarial test functions caused APX pattern failures. We also
+adversarial test functions caused APX pattern failures. I also
 identify a flag fragmentation issue where LLVM's ``full APX'' flag
 (\texttt{-mapxf}) silently omits conditional faulting, leaving 1,120
 CFCMOV instructions and 634 branch eliminations unrealized across
@@ -116,7 +116,7 @@ to LLVM's APX implementation:
   APX-specific optimizations preserve program semantics.
 \end{enumerate}
 
-\noindent Our key findings:
+\noindent My key findings:
 
 \begin{itemize}
 \item \textbf{Correct but brittle.} Zero semantic mismatches across
@@ -195,12 +195,12 @@ substitutions.
 
 \subsection{Static Emission Analysis}
 
-We compiled 265 source files from five SPEC~CPU~2017 benchmarks
+I compiled 265 source files from five SPEC~CPU~2017 benchmarks
 (502.gcc\_r, 505.mcf\_r, 525.x264\_r, 538.imagick\_r, 557.xz\_r)
 under three configurations using clang~22.1.1: (1)~\texttt{-O2}
 (baseline), (2)~\texttt{-O2 -mapxf}, and (3)~\texttt{-O2 -mapxf}
-with \texttt{+cf}. We disassembled object files with
-\texttt{llvm-objdump} and counted APX mnemonics. We also performed a
+with \texttt{+cf}. I disassembled object files with
+\texttt{llvm-objdump} and counted APX mnemonics. I also performed a
 \emph{missed opportunity analysis}: counting compound conditional
 patterns (\texttt{SETcc} chains) and \texttt{MOV+CMOV} pairs in the
 baseline to measure conversion completeness.
@@ -208,7 +208,7 @@ baseline to measure conversion completeness.
 \subsection{Adversarial Context Testing}
 
 CSmith programs use scalar parameters---exactly where APX succeeds.
-To test the boundaries, we wrote 23 functions combining APX-eligible
+To test the boundaries, I wrote 23 functions combining APX-eligible
 patterns with: memory operands (pointer dereferences), volatile
 accesses, \texttt{setjmp/longjmp}, switch/computed goto, and inlining
 into complex callers. Each was compiled with \texttt{-O2 -mapxf} (and
@@ -219,7 +219,7 @@ instruction.
 
 \paragraph{Challenge: No APX hardware.}
 APX processors were unavailable, and Intel SDE cannot run under QEMU
-on Apple Silicon. We designed an \emph{IR-level differential testing}
+on Apple Silicon. I designed an \emph{IR-level differential testing}
 approach that tests optimization correctness without APX hardware.
 
 \paragraph{Three-path compilation.}
@@ -237,7 +237,7 @@ produces a different checksum.
 
 \paragraph{Configuration.}
 CSmith programs were generated with limited complexity (3~functions,
-depth~2) and \mbox{\texttt{-{}-no-volatiles}}---our adversarial
+depth~2) and \mbox{\texttt{-{}-no-volatiles}}---my adversarial
 testing confirmed volatile blocks all APX patterns. Fuzzing ran in
 Docker (Ubuntu~24.04, x86\_64 via QEMU) with clang-19 and
 CSmith~2.3.0 across two campaigns (100 + 500 programs).
@@ -277,7 +277,7 @@ contribute 1,076 instructions; NDD~CMOV accounts for 847.
 \end{table}
 
 \paragraph{Conversion completeness.}
-We compared APX output against non-APX patterns
+I compared APX output against non-APX patterns
 (Table~\ref{tab:conversion}). CCMP achieves 105\% conversion---exceeding
 the SETcc chain count because it also replaces branch-based compound
 conditionals. NDD~CMOV is 100\% complete: every \texttt{MOV+CMOV}
@@ -421,7 +421,7 @@ identical CSmith checksums for every completed program.
   \end{tabular}
 \end{table}
 
-Our IR-level approach tests optimization \emph{decisions} (SimplifyCFG
+My IR-level approach tests optimization \emph{decisions} (SimplifyCFG
 hoisting, CCMP lowering, NDD operand mapping) rather than instruction
 \emph{encodings}. It does not test actual APX encoding correctness
 (requiring APX hardware) or detect performance regressions.
@@ -451,7 +451,7 @@ branches), but CCMP's real-world effectiveness is lower than
 scalar-parameter benchmarks suggest.
 
 \paragraph{Limitations.}
-We tested optimization \emph{decisions}, not APX instruction
+I tested optimization \emph{decisions}, not APX instruction
 \emph{execution} (requiring hardware or SDE). CSmith does not cover
 floating-point, SIMD, or C++ exceptions. The adversarial suite is
 targeted but not exhaustive.
@@ -466,7 +466,7 @@ Yang et al.~\cite{yang2011csmith} introduced CSmith for compiler
 fuzzing via differential testing. Le et al.~\cite{le2014emi} extended
 this with equivalence modulo inputs (EMI). Chen et
 al.~\cite{chen2016empirical} studied GCC/LLVM bugs found through
-fuzzing. Our work applies differential fuzzing specifically to ISA
+fuzzing. My work applies differential fuzzing specifically to ISA
 extension code paths.
 
 Wang et al.~\cite{wang2013towards} showed that undefined
@@ -475,7 +475,7 @@ CompCert~\cite{leroy2009compcert} provides formal guarantees but does
 not support APX. Alive2~\cite{lopes2021alive2} verifies LLVM~IR
 transformations but does not extend to backend instruction selection.
 Prior ISA extension testing has focused on
-SIMD/AVX~\cite{taneja2020testing}; to our knowledge, this is the
+SIMD/AVX~\cite{taneja2020testing}; to my knowledge, this is the
 first security-oriented characterization of LLVM's APX code
 generation.
 
@@ -485,7 +485,7 @@ generation.
 % ═══════════════════════════════════════════════════════════════
 \section{Conclusion}
 
-We applied static emission analysis, adversarial context testing, and
+I applied static emission analysis, adversarial context testing, and
 differential fuzzing to LLVM's Intel APX code generation. LLVM's APX
 implementation is \emph{correct but incomplete}: zero semantic
 mismatches across 546 fuzzed programs, but 52\% of adversarial
